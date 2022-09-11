@@ -7,11 +7,8 @@ Note: Reverted MEV transactions vs non-reverted MEV transactions (observe that n
 
 In the report, we formally defined the front-running PGA, Back-running PGA (Random ordering game), Flashbots game, meta-data game and a Latency game. Obtaning lower bounds of the the price of MEV for each game.
 
-## Pre pull request
-
-## Post pull request / Pre Flashbots auction
-
-## Post Flashbots auction
+In the jupyter notebook we will find a computation of price of MEV of two different bots (is a lower bound of the total MEV) before and after Flashbots.
+We see that blocks before Flashbots contain a lot of spam. Moreover, bots are more efficient.
 
 
 ## Improve the computation of Price of MEV using mev-inspect-py
