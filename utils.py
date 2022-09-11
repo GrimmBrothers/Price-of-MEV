@@ -1,5 +1,5 @@
 import requests
-
+from collections import defaultdict
 
 def get_transactions(action, 
                     address, 
@@ -66,23 +66,24 @@ def get_huge_transactions(action, address, target_block, present_block):
 
 
 def compute_gas_used(bot_address,from_block,to_block,interval = 4):
-    result = get_huge_transactions("txlist",mev_bot,from_block,to_block)
+    result = get_huge_transactions("txlist",bot_address,from_block,to_block)
     result_ordered = sorted(result, key=(lambda x: int(x["blockNumber"])), reverse=False)
     data = [tx['input'] for tx in result]
     tx_hash = [tx['hash'] for tx in result]
     
-    results_erc = get_huge_transactions("tokentx",mev_bot,from_block,to_block)
+    results_erc = get_huge_transactions("tokentx",bot_address,from_block,to_block)
     tx_hash_erc = list(set([tx['hash'] for tx in results_erc]))
     
     executed_transactions = [trans['hash'] for trans in result_ordered if trans['hash'] in tx_hash_erc]
     
-    executed_gas_used   = 1
+    executed_gas_used   = 0
     cumulative_gas_used = 0
     egu,cgu,pmev,blocks = [],[],[],[]
     blockNumber = result_ordered[0]['blockNumber']
-    
+    pmev_dict2 = dict() 
     pmev_dict = defaultdict(lambda : defaultdict(int))
     block_list = [from_block+i for i in range(0,to_block-from_block+1,interval)]
+    block_list2 = []
     for block in block_list:
         pmev_dict[block] = {"gas_used":0,
                             "executed_gas_used":0,
@@ -104,9 +105,18 @@ def compute_gas_used(bot_address,from_block,to_block,interval = 4):
                                       "executed_acumulated_gas_used":executed_gas_used,
                                       "total_acumated_gas_used":cumulative_gas_used,
                                       }
+            pmev_dict2[blockNumber] = pmev_dict[blockNumber]
+            block_list2.append(blockNumber)
         except:
             print(trans["blockNumber"])
-    return pmev_dict
+
+    for block in pmev_dict:
+        try:
+            block2 = min([_block for _block in block_list2 if _block>=block])
+            pmev_dict[block] = pmev_dict[block2]
+        except:
+            pass
+    return pmev_dict2
 
 
 def compute_price_mev(bots_list,from_block,to_block,interval=4):
